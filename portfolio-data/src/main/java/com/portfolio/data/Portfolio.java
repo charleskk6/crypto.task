@@ -17,9 +17,13 @@ import java.time.YearMonth;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+
+/**
+ * Portfolio is a DataType created by csv file.
+ * It contains the  from StockPriceCache
+ */
 public class Portfolio {
 
-  private final StockPriceCache stockPriceCache;
   private final String name;
 
   private final ConcurrentHashMap<String, AssetWrapper<? extends IAssetInterface>> portfolioCache;
@@ -28,17 +32,24 @@ public class Portfolio {
 
   private static final Logger logger = LoggerFactory.getLogger(Portfolio.class);
 
-  public Portfolio(final String name, final String positionFilePath,
-                   // Initial with current asset price
-                   final StockPriceCache stockPriceCache){
-    this.stockPriceCache = stockPriceCache;
+  /**
+   * Instantiates a new Portfolio.
+   *
+   * @param name             the portfolio name
+   * @param positionFilePath the position file path
+   */
+  public Portfolio(final String name, final String positionFilePath){
     this.name = name;
     this.positionFilePath = positionFilePath;
     this.portfolioCache = new ConcurrentHashMap<>();
-    setupCache();
   }
 
-  private void setupCache(){
+  /**
+   * Setup Portfolio with StockMarket which captured current price of Stocks
+   *
+   * @param stockMarket    stock market containing stock prices
+   */
+  public void setupPortfolio(StockMarket stockMarket){
     try (InputStream inputStream = Portfolio.class.getResourceAsStream(positionFilePath)) {
 
       // Ensure the file exists
@@ -58,7 +69,7 @@ public class Portfolio {
           final String symbol = values[0];
           final String positionSize = values[1];
           final String symbolOrUnderlyingSymbol = symbol.split("-")[0];
-          final Stock underlying = stockPriceCache.getStockDictionary().get(symbolOrUnderlyingSymbol);
+          final Stock underlying = stockMarket.getStockDictionary().get(symbolOrUnderlyingSymbol);
           portfolioCache.put(symbol, AssetWrapperFactory.create(
                   symbol, Integer.parseInt(positionSize), BigDecimal.valueOf(underlying.getInitialPrice())));
         }
@@ -68,10 +79,20 @@ public class Portfolio {
     }
   }
 
+  /**
+   * Get name string.
+   *
+   * @return the string
+   */
   public String getName(){
     return name;
   }
 
+  /**
+   * Get assets in portfolio and sort asset by Symbol orders
+   *
+   * @return the list
+   */
   public List<AssetWrapper<? extends IAssetInterface>> getAssets(){
     PriorityQueue<AssetWrapper<? extends IAssetInterface>> pq =
             new PriorityQueue<>((a1, a2) -> sort(a1.getSymbol(), a2.getSymbol()));
@@ -121,6 +142,12 @@ public class Portfolio {
     }
   }
 
+  /**
+   * Update asset Price
+   *
+   * @param symbolOrUnderlyingSymbol the symbol or underlying symbol
+   * @param priceOrUnderlyingPrice   the price or underlying price
+   */
   public void updateBySymbolOrUnderlyingSymbolPrice(
           final String symbolOrUnderlyingSymbol, final BigDecimal priceOrUnderlyingPrice){
     logger.debug("updateBySymbolOrUnderlyingSymbolPrice: {}", symbolOrUnderlyingSymbol);
@@ -131,6 +158,11 @@ public class Portfolio {
     logger.debug("Update Price Completed");
   }
 
+  /**
+   * Get total value of the whole portfolio
+   *
+   * @return the big decimal
+   */
   public BigDecimal getTotalValue(){
     BigDecimal total = BigDecimal.ZERO;
     for(AssetWrapper<? extends IAssetInterface> asset: portfolioCache.values()){

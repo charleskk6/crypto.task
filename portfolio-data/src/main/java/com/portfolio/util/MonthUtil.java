@@ -4,7 +4,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The type Month util.
+ */
 public class MonthUtil {
+  /**
+   * The constant MONTH_MAP.
+   */
   public static final Map<String, Integer> MONTH_MAP = createMonthMap();
 
   private static Map<String, Integer> createMonthMap() {

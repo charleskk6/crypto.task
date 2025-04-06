@@ -1,9 +1,9 @@
 package com.portfolio.app.core.producer;
 
 import com.portfolio.algor.GeometricBrownianMotion;
-import com.portfolio.data.StockPriceCache;
+import com.portfolio.data.StockMarket;
 import com.portfolio.dto.dict.Stock;
-import com.portfolio.dto.event.StockPriceEvent;
+import com.portfolio.dto.event.StockChangePriceEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +13,8 @@ import java.util.concurrent.BlockingQueue;
 
 public class StockPriceChangeEventProducer implements Runnable{
 
-  private final BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue;
-  private final StockPriceCache stockPriceCache;
+  private final BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue;
+  private final StockMarket stockMarket;
   private final Integer stockPriceSimulateDurationMin;
   private final Integer stockPriceSimulateDurationMax;
   private volatile boolean running;
@@ -22,11 +22,11 @@ public class StockPriceChangeEventProducer implements Runnable{
   private static final Logger logger = LoggerFactory.getLogger(StockPriceChangeEventProducer.class);
 
   public StockPriceChangeEventProducer(
-    BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue, StockPriceCache stockPriceCache,
-    Integer stockPriceSimulateDurationMin, Integer stockPriceSimulateDurationMax
+          BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue, StockMarket stockMarket,
+          Integer stockPriceSimulateDurationMin, Integer stockPriceSimulateDurationMax
   ){
-    this.stockPriceEventBlockingQueue = stockPriceEventBlockingQueue;
-    this.stockPriceCache = stockPriceCache;
+    this.stockChangePriceEventBlockingQueue = stockChangePriceEventBlockingQueue;
+    this.stockMarket = stockMarket;
     this.stockPriceSimulateDurationMin = stockPriceSimulateDurationMin;
     this.stockPriceSimulateDurationMax = stockPriceSimulateDurationMax;
   }
@@ -44,11 +44,11 @@ public class StockPriceChangeEventProducer implements Runnable{
                 random.nextInt(stockPriceSimulateDurationMax - stockPriceSimulateDurationMin + 1);
         Thread.sleep(sleepTime);
 
-        List<StockPriceEvent> events = randomCreateStockPriceChangeEvents(stockPriceCache);
+        List<StockChangePriceEvent> events = randomCreateStockPriceChangeEvents(stockMarket);
         logger.info("## {} Market Data Update", iteration++);
-        for(StockPriceEvent event: events){
+        for(StockChangePriceEvent event: events){
           logger.info("{} change to {}", event.getSymbol(), String.format("%,.2f", event.getNewPrice()));
-          stockPriceEventBlockingQueue.put(event);
+          stockChangePriceEventBlockingQueue.put(event);
         }
 
       } catch (InterruptedException e) {
@@ -59,19 +59,19 @@ public class StockPriceChangeEventProducer implements Runnable{
     logger.debug("Stock Price Simulator has Stopped");
   }
 
-  private List<StockPriceEvent> randomCreateStockPriceChangeEvents(StockPriceCache stockPriceCache){
-    List<StockPriceEvent> events = new ArrayList<>();
+  private List<StockChangePriceEvent> randomCreateStockPriceChangeEvents(StockMarket stockMarket){
+    List<StockChangePriceEvent> events = new ArrayList<>();
     Random random = new Random();
 
     do {
-      for(Map.Entry<String, BigDecimal> entry: stockPriceCache.getStockPriceEntrySets()){
+      for(Map.Entry<String, BigDecimal> entry: stockMarket.getStockPriceMap().entrySet()){
         // Random Simulate price change of a stock
         if(random.nextBoolean()){
           String symbol = entry.getKey();
           BigDecimal price = entry.getValue();
-          Stock stock = stockPriceCache.getStockDictionary().get(symbol);
+          Stock stock = stockMarket.getStockDictionary().get(symbol);
           events.add(
-            StockPriceEvent.builder()
+            StockChangePriceEvent.builder()
               .symbol(symbol)
               .newPrice(
                       BigDecimal.valueOf(
@@ -85,7 +85,7 @@ public class StockPriceChangeEventProducer implements Runnable{
     } while(events.isEmpty());
 
     // Sort event with Symbol name
-    events.sort(Comparator.comparing(StockPriceEvent::getSymbol));
+    events.sort(Comparator.comparing(StockChangePriceEvent::getSymbol));
     // Final Event flag is use for signal Console to display new Portfolio
     events.get(events.size()-1).setFinalEvent(true);
 

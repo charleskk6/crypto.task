@@ -2,8 +2,8 @@ package com.portfolio.app.core.service;
 
 import com.portfolio.app.config.StocksConfig;
 import com.portfolio.app.core.producer.StockPriceChangeEventProducer;
-import com.portfolio.data.StockPriceCache;
-import com.portfolio.dto.event.StockPriceEvent;
+import com.portfolio.data.StockMarket;
+import com.portfolio.dto.event.StockChangePriceEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,14 +19,14 @@ public class MarketDataService extends Thread{
 
   @Autowired
   public MarketDataService(
-    BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue,
+    BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue,
     StocksConfig stockConfig,
-    StockPriceCache stockPriceCache,
+    StockMarket stockMarket,
     @Value("${stock.price.simulate.duration.min:500}") Integer stockPriceSimulateDurationMin,
     @Value("${stock.price.simulate.duration.max:2000}") Integer stockPriceSimulateDurationMax
   ){
     this.stockPriceChangeEventProducer = new StockPriceChangeEventProducer(
-            stockPriceEventBlockingQueue, stockPriceCache,
+            stockChangePriceEventBlockingQueue, stockMarket,
             stockPriceSimulateDurationMin, stockPriceSimulateDurationMax);
   }
 

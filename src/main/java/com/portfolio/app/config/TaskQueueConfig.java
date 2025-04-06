@@ -1,6 +1,6 @@
 package com.portfolio.app.config;
 
-import com.portfolio.dto.event.StockPriceEvent;
+import com.portfolio.dto.event.StockChangePriceEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class TaskQueueConfig {
 
   @Bean
-  public BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue(){
+  public BlockingQueue<StockChangePriceEvent> stockPriceEventBlockingQueue(){
      return new LinkedBlockingQueue<>();
   }
 

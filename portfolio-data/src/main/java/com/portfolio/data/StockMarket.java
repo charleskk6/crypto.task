@@ -12,7 +12,10 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StockPriceCache {
+/**
+ * The StockMarket is the DataType, holding Current Stock Price and Stock Dictionary in the Market
+ */
+public class StockMarket {
 
   private final ConcurrentHashMap<String, BigDecimal> stockPriceCache;
 
@@ -28,9 +31,14 @@ public class StockPriceCache {
   private static final int MOCK_PRICE_UPPER_BOUND = 500;
 
   // Logger
-  private static final Logger logger = LoggerFactory.getLogger(StockPriceCache.class);
+  private static final Logger logger = LoggerFactory.getLogger(StockMarket.class);
 
-  public StockPriceCache(Map<String, Stock> stockDictionary){
+  /**
+   * Instantiates a new StockMarket with Stock Dictionary configured in properties file
+   *
+   * @param stockDictionary the stock dictionary
+   */
+  public StockMarket(Map<String, Stock> stockDictionary){
     this.stockPriceCache = new ConcurrentHashMap<>();
     this.stockDictionary = stockDictionary;
     setupCache();
@@ -38,7 +46,7 @@ public class StockPriceCache {
 
   // Extract only Stock defined in position.csv, mapping with initial price setting in properties file
   private void setupCache(){
-    try (InputStream inputStream = StockPriceCache.class.getResourceAsStream(POSITION_FILE_PATH)) {
+    try (InputStream inputStream = StockMarket.class.getResourceAsStream(POSITION_FILE_PATH)) {
       // Ensure the file exists
       if (inputStream == null) {
         logger.error("File not found in resources.");
@@ -65,14 +73,30 @@ public class StockPriceCache {
     }
   }
 
+  /**
+   * Get stock dictionary
+   *
+   * @return the map
+   */
   public Map<String, Stock> getStockDictionary(){
     return stockDictionary;
   }
 
-  public Set<Map.Entry<String, BigDecimal>> getStockPriceEntrySets(){
-    return stockPriceCache.entrySet();
+  /**
+   * Get stock price map
+   *
+   * @return the map
+   */
+  public Map<String, BigDecimal> getStockPriceMap(){
+    return Collections.unmodifiableMap(new HashMap<>(stockPriceCache));
   }
 
+  /**
+   * Upsert stock price.
+   *
+   * @param symbol the symbol
+   * @param price  the price
+   */
   public void upsertStockPrice(final String symbol, BigDecimal price){
     stockPriceCache.put(symbol, price);
   }

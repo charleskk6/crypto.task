@@ -1,6 +1,6 @@
 package com.portfolio.app.config;
 
-import com.portfolio.data.StockPriceCache;
+import com.portfolio.data.StockMarket;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 public class CacheConfig {
 
   @Bean
-  public StockPriceCache setupStockPriceCache(StocksConfig stockConfig){
+  public StockMarket setupStockPriceCache(StocksConfig stockConfig){
     // A data storage simulating Market Data
-    return new StockPriceCache(stockConfig.getData());
+    return new StockMarket(stockConfig.getData());
   }
 }

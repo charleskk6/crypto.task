@@ -1,3 +1,6 @@
 rootProject.name = 'portfolio.app'
 include 'portfolio-data'
 include 'portfolio-dto'
+include 'portfolio-algor2'
+include 'portfolio-algor'
+

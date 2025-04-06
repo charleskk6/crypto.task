@@ -20,6 +20,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	//Sub-modules
+	implementation project(':portfolio-algor')
 	implementation project(':portfolio-data')
 	implementation project(':portfolio-dto')
 

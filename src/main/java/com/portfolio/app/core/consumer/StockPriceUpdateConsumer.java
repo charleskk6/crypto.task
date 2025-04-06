@@ -1,8 +1,8 @@
 package com.portfolio.app.core.consumer;
 
-import com.portfolio.data.StockPriceCache;
-import com.portfolio.data.UserProfile;
-import com.portfolio.dto.event.StockPriceEvent;
+import com.portfolio.data.Portfolio;
+import com.portfolio.data.StockMarket;
+import com.portfolio.dto.event.StockChangePriceEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,9 +11,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class StockPriceUpdateConsumer implements Runnable{
 
-  private final BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue;
-  private final StockPriceCache stockPriceCache;
-  private final List<UserProfile> subscribers;
+  private final BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue;
+  private final StockMarket stockMarket;
+  private final List<Portfolio> subscribers;
   private volatile  boolean running;
   private final String consumerName;
   private final Object displayBlockingLock;
@@ -21,14 +21,14 @@ public class StockPriceUpdateConsumer implements Runnable{
   private static final Logger logger = LoggerFactory.getLogger(StockPriceUpdateConsumer.class);
 
   public StockPriceUpdateConsumer(
-    BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue,
-    StockPriceCache stockPriceCache,
-    List<UserProfile> subscribers,
+    BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue,
+    StockMarket stockMarket,
+    List<Portfolio> subscribers,
     String consumerName,
     Object displayBlockingLock
   ){
-    this.stockPriceEventBlockingQueue = stockPriceEventBlockingQueue;
-    this.stockPriceCache = stockPriceCache;
+    this.stockChangePriceEventBlockingQueue = stockChangePriceEventBlockingQueue;
+    this.stockMarket = stockMarket;
     this.subscribers = subscribers;
     this.consumerName = consumerName;
     this.displayBlockingLock = displayBlockingLock;
@@ -40,11 +40,12 @@ public class StockPriceUpdateConsumer implements Runnable{
       logger.debug("Stock Price Update Consumer:{} starts", consumerName);
       running = true;
       while (running) {
-        StockPriceEvent event = stockPriceEventBlockingQueue.take();
-        stockPriceCache.upsertStockPrice(event.getSymbol(), event.getNewPrice());
+        StockChangePriceEvent event = stockChangePriceEventBlockingQueue.take();
+        stockMarket.upsertStockPrice(event.getSymbol(), event.getNewPrice());
 
         synchronized (displayBlockingLock) {
-          subscribers.forEach(subscriber -> subscriber.updatePortfolio(event.getSymbol(), event.getNewPrice()));
+          subscribers.forEach(subscriber -> subscriber
+                  .updateBySymbolOrUnderlyingSymbolPrice(event.getSymbol(), event.getNewPrice()));
           if(event.isFinalEvent()){
             displayBlockingLock.notifyAll();
           }
