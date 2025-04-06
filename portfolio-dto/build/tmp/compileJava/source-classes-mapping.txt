@@ -1,18 +1,20 @@
-com/portfolio/dto/AssetWrapper.java
- com.portfolio.dto.AssetWrapper
-com/portfolio/dto/IAssetInterface.java
- com.portfolio.dto.IAssetInterface
-com/portfolio/dto/StockItem.java
- com.portfolio.dto.StockItem
- com.portfolio.dto.StockItem$1
- com.portfolio.dto.StockItem$Builder
-com/portfolio/dto/StockOptionType.java
- com.portfolio.dto.StockOptionType
-com/portfolio/dto/StockOptionItem.java
- com.portfolio.dto.StockOptionItem
- com.portfolio.dto.StockOptionItem$1
- com.portfolio.dto.StockOptionItem$Builder
-com/portfolio/dto/StockPriceEvent.java
- com.portfolio.dto.StockPriceEvent
- com.portfolio.dto.StockPriceEvent$1
- com.portfolio.dto.StockPriceEvent$Builder
+com/portfolio/dto/asset/StockItem.java
+ com.portfolio.dto.asset.StockItem
+ com.portfolio.dto.asset.StockItem$1
+ com.portfolio.dto.asset.StockItem$Builder
+com/portfolio/dto/dict/Stock.java
+ com.portfolio.dto.dict.Stock
+com/portfolio/dto/asset/StockOptionType.java
+ com.portfolio.dto.asset.StockOptionType
+com/portfolio/dto/asset/AssetWrapper.java
+ com.portfolio.dto.asset.AssetWrapper
+com/portfolio/dto/asset/StockOptionItem.java
+ com.portfolio.dto.asset.StockOptionItem
+ com.portfolio.dto.asset.StockOptionItem$1
+ com.portfolio.dto.asset.StockOptionItem$Builder
+com/portfolio/dto/asset/IAssetInterface.java
+ com.portfolio.dto.asset.IAssetInterface
+com/portfolio/dto/event/StockPriceEvent.java
+ com.portfolio.dto.event.StockPriceEvent
+ com.portfolio.dto.event.StockPriceEvent$1
+ com.portfolio.dto.event.StockPriceEvent$Builder

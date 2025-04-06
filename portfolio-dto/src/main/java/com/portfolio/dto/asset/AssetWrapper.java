@@ -1,11 +1,11 @@
-package com.portfolio.dto;
+package com.portfolio.dto.asset;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class AssetWrapper<T extends IAssetInterface> {
   private final T asset;
   private BigDecimal price;
-  private BigDecimal value;
 
   public AssetWrapper(T asset) {
     this.asset = asset;
@@ -23,15 +23,12 @@ public class AssetWrapper<T extends IAssetInterface> {
     return price;
   }
 
-  public void setPrice(BigDecimal price) {
-    this.price = price;
+  public void setPriceOrUnderlyingPrice(BigDecimal priceOrUnderlyingPrice) {
+    this.price = asset.calculatePrice(priceOrUnderlyingPrice);
   }
 
   public BigDecimal getValue() {
-    return value;
-  }
-
-  public void setValue(BigDecimal value) {
-    this.value = value;
+    return Optional.ofNullable(price)
+            .map(p -> p.multiply(BigDecimal.valueOf(getSize()))).orElse(null);
   }
 }

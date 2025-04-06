@@ -1,7 +1,7 @@
 package com.portfolio.factory;
 
+import com.portfolio.dto.asset.*;
 import com.portfolio.util.MonthUtil;
-import com.portfolio.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class AssetWrapperFactory {
       YearMonth yearMonth = YearMonth.of(year, MonthUtil.MONTH_MAP.get(notations[1]));
       LocalDate expirationDate = yearMonth.atEndOfMonth();
 
-      AssetWrapper<StockOptionItem> asset = new AssetWrapper<>(StockOptionItem.builder()
+      return new AssetWrapper<>(StockOptionItem.builder()
               .symbol(symbol)
               .underlyingSymbol(underlyingSymbol)
               .type(optionType)
@@ -44,18 +44,11 @@ public class AssetWrapperFactory {
               .expirationDate(expirationDate)
               .size(positionSize)
               .build());
-      asset.setPrice(BigDecimal.ONE);
-      asset.setValue(BigDecimal.ONE);
-      return asset;
-
     } else {
-      AssetWrapper<StockItem> asset = new AssetWrapper<>(StockItem.builder()
+       return new AssetWrapper<>(StockItem.builder()
               .symbol(symbol)
               .size(positionSize)
               .build());
-      asset.setPrice(priceOrUnderlyingPrice);
-      asset.setValue(priceOrUnderlyingPrice.multiply(BigDecimal.valueOf(positionSize)));
-      return asset;
     }
   }
 }

@@ -1,9 +1,9 @@
 package com.portfolio.app.core.console;
 
-import com.portfolio.data.PortfolioCache;
-import com.portfolio.dto.AssetWrapper;
-import com.portfolio.dto.IAssetInterface;
 import com.portfolio.app.util.LogTableUtil;
+import com.portfolio.data.Portfolio;
+import com.portfolio.dto.asset.AssetWrapper;
+import com.portfolio.dto.asset.IAssetInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,8 @@ import java.util.*;
 @Component
 public class PortfolioConsole{
 
-  private final PortfolioCache portfolioCache;
+  private final Object displayBlockingLock;
+
   private volatile boolean running;
 
   private final String[] headers = {"symbol", "price", "qty", "value"};
@@ -26,9 +27,11 @@ public class PortfolioConsole{
 
   private static final Logger logger = LoggerFactory.getLogger(PortfolioConsole.class);
 
+  private List<Portfolio> portfolios = new ArrayList<>();
+
   @Autowired
-  public PortfolioConsole(PortfolioCache portfolioCache){
-    this.portfolioCache = portfolioCache;
+  public PortfolioConsole(Object displayBlockingLock){
+    this.displayBlockingLock = displayBlockingLock;
   }
 
   @PostConstruct
@@ -36,6 +39,10 @@ public class PortfolioConsole{
     Thread simulatorThread = new Thread(this::display);
     simulatorThread.setDaemon(true);
     simulatorThread.start();
+  }
+
+  public void registerPortfolio(Portfolio portfolio){
+    portfolios.add(portfolio);
   }
 
   @PreDestroy
@@ -48,11 +55,19 @@ public class PortfolioConsole{
     logger.debug("Portfolio Console starts");
     while (running) {
       try {
-        logger.info("\n## Portfolio");
+        synchronized (displayBlockingLock){
+          // Wait until stock price change update complete
+          displayBlockingLock.wait();
+        }
 
-        LogTableUtil.logTable(headers, generateTableContent(), columnWidths);
+        for(Portfolio portfolio: portfolios){
+          logger.info("\n## {}", portfolio.getName());
+          LogTableUtil.logTable(headers, generateTableContent(portfolio), columnWidths);
 
-        Thread.sleep(2000);
+          int totalWidth = totalColumnWidth() - 15;
+          logger.info(String.format("#Total portfolio %," + totalWidth + ".2f\n",
+                  portfolio.getTotalValue().setScale(2, RoundingMode.HALF_UP).doubleValue()));
+        }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt(); // Respect interruption
         break;
@@ -61,29 +76,30 @@ public class PortfolioConsole{
     logger.debug("Portfolio Console has Stopped");
   }
 
-  private String[][] generateTableContent(){
-    Set<Map.Entry<String, AssetWrapper<? extends IAssetInterface>>> entrySet =
-            portfolioCache.getPortfolioEntrySets();
-
-    PriorityQueue<AssetWrapper<? extends IAssetInterface>> pq =
-            new PriorityQueue<>(Comparator.comparing(AssetWrapper::getSymbol));
-    for(Map.Entry<String, AssetWrapper<? extends IAssetInterface>> entry: entrySet){
-      pq.add(entry.getValue());
-    }
-
-    String[][] items = new String[entrySet.size()][headers.length];
+  private String[][] generateTableContent(Portfolio portfolio){
+    List<AssetWrapper<? extends IAssetInterface>> assets = portfolio.getAssets();
+    String[][] items = new String[assets.size()][headers.length];
 
     for(int i = 0; i<items.length;++i){
-      AssetWrapper<? extends IAssetInterface> asset = pq.poll();
+      AssetWrapper<? extends IAssetInterface> asset = assets.get(i);
       if(Objects.nonNull(asset)){
         items[i][0] = asset.getSymbol();
-        items[i][1] = asset.getPrice().setScale(2, RoundingMode.HALF_UP).toString();
+        items[i][1] = Optional.ofNullable(asset.getPrice())
+                .map(price -> price.setScale(2, RoundingMode.HALF_UP).toString()).orElse("");
         items[i][2] = String.valueOf(asset.getSize());
-        items[i][3] = asset.getValue().setScale(2, RoundingMode.HALF_UP).toString();
+        items[i][3] = Optional.ofNullable(asset.getValue())
+                .map(value -> value.setScale(2, RoundingMode.HALF_UP).toString()).orElse("");
       }
     }
 
     return items;
   }
 
+  private int totalColumnWidth(){
+    int total = 0;
+    for(int width: columnWidths){
+      total += width;
+    }
+    return total;
+  }
 }

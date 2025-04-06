@@ -1,6 +1,6 @@
 package com.portfolio.app.config;
 
-import com.portfolio.dto.StockPriceEvent;
+import com.portfolio.dto.event.StockPriceEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

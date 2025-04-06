@@ -1,16 +1,14 @@
 package com.portfolio.app.core.producer;
 
-import com.portfolio.app.util.NewStockPriceGenerator;
+import com.portfolio.app.util.algor.GeometricBrownianMotion;
 import com.portfolio.data.StockPriceCache;
-import com.portfolio.dto.StockPriceEvent;
+import com.portfolio.dto.dict.Stock;
+import com.portfolio.dto.event.StockPriceEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 public class StockPriceChangeEventProducer implements Runnable{
@@ -41,20 +39,19 @@ public class StockPriceChangeEventProducer implements Runnable{
     running = true;
     while (running) {
       try {
+        // Sleep before the generated time
+        int sleepTime = stockPriceSimulateDurationMin +
+                random.nextInt(stockPriceSimulateDurationMax - stockPriceSimulateDurationMin + 1);
+        Thread.sleep(sleepTime);
+
         List<StockPriceEvent> events = randomCreateStockPriceChangeEvents(stockPriceCache);
-        if(events.size()>0){
+        if(!events.isEmpty()){
           logger.info("## {} Market Data Update", iteration++);
 
           for(StockPriceEvent event: events){
             stockPriceEventBlockingQueue.put(event);
           }
         }
-
-        // Sleep for the generated time
-        int sleepTime = stockPriceSimulateDurationMin +
-                random.nextInt(stockPriceSimulateDurationMax - stockPriceSimulateDurationMin + 1);
-        Thread.sleep(sleepTime);
-
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt(); // Respect interruption
         break;
@@ -67,16 +64,30 @@ public class StockPriceChangeEventProducer implements Runnable{
     List<StockPriceEvent> events = new ArrayList<>();
     Random random = new Random();
     for(Map.Entry<String, BigDecimal> entry: stockPriceCache.getStockPriceEntrySets()){
-      if(random.nextBoolean()){
+      // Initial Price for a stock, Or
+      // Random Simulate price change of a stock
+      if(Objects.isNull(entry.getValue()) || random.nextBoolean()){
         String symbol = entry.getKey();
         BigDecimal price = entry.getValue();
+        Stock stock = stockPriceCache.getStockDictionary().get(symbol);
         events.add(
           StockPriceEvent.builder()
             .symbol(symbol)
-            .newPrice(NewStockPriceGenerator.generate(price))
+            .newPrice(
+              BigDecimal.valueOf(
+                // Generate new Price
+                new GeometricBrownianMotion(stock.getMu(),stock.getSigma()).getNextPrice(price.doubleValue(), 60)
+              )
+            )
             .build());
       }
     }
+
+    // Final Event flag is use for signal Console to display new Portfolio
+    if(!events.isEmpty()){
+      events.get(events.size()-1).setFinalEvent(true);
+    }
+
     return events;
   }
 

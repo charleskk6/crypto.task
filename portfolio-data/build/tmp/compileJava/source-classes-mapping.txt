@@ -1,8 +1,10 @@
 com/portfolio/util/MonthUtil.java
  com.portfolio.util.MonthUtil
+com/portfolio/data/Portfolio.java
+ com.portfolio.data.Portfolio
+com/portfolio/data/UserProfile.java
+ com.portfolio.data.UserProfile
 com/portfolio/factory/AssetWrapperFactory.java
  com.portfolio.factory.AssetWrapperFactory
 com/portfolio/data/StockPriceCache.java
  com.portfolio.data.StockPriceCache
-com/portfolio/data/PortfolioCache.java
- com.portfolio.data.PortfolioCache

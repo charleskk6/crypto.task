@@ -1,4 +1,4 @@
-package com.portfolio.dto;
+package com.portfolio.dto.asset;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,7 +31,7 @@ public class StockOptionItem implements IAssetInterface {
         this.size = builder.size;
     }
 
-    // Getter methods
+    @Override
     public String getSymbol() {
         return symbol;
     }
@@ -72,12 +72,18 @@ public class StockOptionItem implements IAssetInterface {
         this.expirationDate = expirationDate;
     }
 
+    @Override
     public int getSize() {
         return size;
     }
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    @Override
+    public BigDecimal calculatePrice(BigDecimal price) {
+        return price;
     }
 
     public static Builder builder() {

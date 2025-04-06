@@ -1,29 +1,37 @@
 package com.portfolio.app.core.consumer;
 
 import com.portfolio.data.StockPriceCache;
-import com.portfolio.dto.StockPriceEvent;
+import com.portfolio.data.UserProfile;
+import com.portfolio.dto.event.StockPriceEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class StockPriceUpdateConsumer implements Runnable{
 
   private final BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue;
   private final StockPriceCache stockPriceCache;
+  private final List<UserProfile> subscribers;
   private volatile  boolean running;
   private final String consumerName;
+  private final Object displayBlockingLock;
 
   private static final Logger logger = LoggerFactory.getLogger(StockPriceUpdateConsumer.class);
 
   public StockPriceUpdateConsumer(
     BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue,
     StockPriceCache stockPriceCache,
-    String consumerName
+    List<UserProfile> subscribers,
+    String consumerName,
+    Object displayBlockingLock
   ){
     this.stockPriceEventBlockingQueue = stockPriceEventBlockingQueue;
     this.stockPriceCache = stockPriceCache;
+    this.subscribers = subscribers;
     this.consumerName = consumerName;
+    this.displayBlockingLock = displayBlockingLock;
   }
 
   @Override
@@ -34,6 +42,15 @@ public class StockPriceUpdateConsumer implements Runnable{
       while (running) {
         StockPriceEvent event = stockPriceEventBlockingQueue.take();
         stockPriceCache.upsertStockPrice(event.getSymbol(), event.getNewPrice());
+        subscribers.forEach(subscriber -> {
+          subscriber.updatePortfolio(event.getSymbol(), event.getNewPrice());
+        });
+
+        if(event.isFinalEvent()){
+          synchronized (displayBlockingLock) {
+            displayBlockingLock.notifyAll();
+          }
+        }
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

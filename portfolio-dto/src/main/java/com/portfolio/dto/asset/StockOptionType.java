@@ -1,4 +1,4 @@
-package com.portfolio.dto;
+package com.portfolio.dto.asset;
 
 public enum StockOptionType {
     CALL, PUT
