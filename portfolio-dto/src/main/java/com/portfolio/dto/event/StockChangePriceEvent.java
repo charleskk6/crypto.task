@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 /**
  * The type Stock change price event.
+ * IsFinalEvent is a boolean to notify PortfolioConsole to print summaries of portfolios
  */
 public class StockChangePriceEvent {
   private String symbol;
