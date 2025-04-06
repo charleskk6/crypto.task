@@ -1,4 +1,4 @@
-package com.portfolio.dto.asset;
+package com.portfolio.dto;
 
 import java.math.BigDecimal;
 
@@ -37,8 +37,8 @@ public class StockItem implements IAssetInterface {
     }
 
     @Override
-    public BigDecimal calculatePrice(BigDecimal price) {
-        return price;
+    public BigDecimal calculatePrice(BigDecimal priceOrUnderlyingPrice) {
+        return priceOrUnderlyingPrice;
     }
 
     public static Builder builder() {

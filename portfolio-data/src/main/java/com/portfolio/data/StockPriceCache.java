@@ -74,7 +74,6 @@ public class StockPriceCache {
   }
 
   public void upsertStockPrice(final String symbol, BigDecimal price){
-    logger.info("{} change to {}", symbol, String.format("%.2f", price));
     stockPriceCache.put(symbol, price);
   }
 

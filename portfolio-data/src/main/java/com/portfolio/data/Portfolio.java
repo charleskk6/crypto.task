@@ -1,9 +1,10 @@
 package com.portfolio.data;
 
-import com.portfolio.dto.asset.AssetWrapper;
-import com.portfolio.dto.asset.IAssetInterface;
+import com.portfolio.dto.AssetWrapper;
+import com.portfolio.dto.IAssetInterface;
 import com.portfolio.dto.dict.Stock;
 import com.portfolio.factory.AssetWrapperFactory;
+import com.portfolio.util.MonthUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -72,7 +74,7 @@ public class Portfolio {
 
   public List<AssetWrapper<? extends IAssetInterface>> getAssets(){
     PriorityQueue<AssetWrapper<? extends IAssetInterface>> pq =
-            new PriorityQueue<>(Comparator.comparing(AssetWrapper::getSymbol));
+            new PriorityQueue<>((a1, a2) -> sort(a1.getSymbol(), a2.getSymbol()));
     for(Map.Entry<String, AssetWrapper<? extends IAssetInterface>> entry: portfolioCache.entrySet()){
       pq.add(entry.getValue());
     }
@@ -82,6 +84,41 @@ public class Portfolio {
       assets.add(pq.poll());
     }
     return assets;
+  }
+
+  private int sort(final String symbol1,final String symbol2){
+    String[] arguments1 = symbol1.split("-");
+    String[] arguments2 = symbol2.split("-");
+
+    if(symbol1.contains("-") && symbol2.contains("-")){ // Sort between Options
+      String underlying1 = arguments1[0];
+      String underlying2 = arguments2[0];
+
+      if(underlying1.equals(underlying2)){ // Sort with Call and Put Option with same underlying
+        int year1 = Integer.parseInt(arguments1[2]);
+        int month1 = MonthUtil.MONTH_MAP.get(arguments1[1]);
+        int year2 = Integer.parseInt(arguments2[2]);
+        int month2 = MonthUtil.MONTH_MAP.get(arguments2[1]);
+        YearMonth yearMonth1 = YearMonth.of(year1, month1);
+        YearMonth yearMonth2 = YearMonth.of(year2, month2);
+        String type1 = arguments1[4];
+        String type2 = arguments2[4];
+
+        if(yearMonth1.isBefore(yearMonth2)){ // Sort by Expiry Date
+          return -1;
+        } else if (yearMonth1.isAfter(yearMonth2)) {
+          return 1;
+        } else if(type1.equals("C") && type2.equals("P")){
+          return -1;
+        } else {
+          return 1;
+        }
+      } else { // Sort with Options with different underlying
+        return underlying1.compareTo(underlying2);
+      }
+    } else { // Sort Stocks and Options by name
+      return symbol1.compareTo(symbol2);
+    }
   }
 
   public void updateBySymbolOrUnderlyingSymbolPrice(

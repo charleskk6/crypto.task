@@ -1,6 +1,6 @@
 package com.portfolio.app.core.producer;
 
-import com.portfolio.app.util.algor.GeometricBrownianMotion;
+import com.portfolio.algor.GeometricBrownianMotion;
 import com.portfolio.data.StockPriceCache;
 import com.portfolio.dto.dict.Stock;
 import com.portfolio.dto.event.StockPriceEvent;
@@ -45,12 +45,12 @@ public class StockPriceChangeEventProducer implements Runnable{
         Thread.sleep(sleepTime);
 
         List<StockPriceEvent> events = randomCreateStockPriceChangeEvents(stockPriceCache);
-        if(!events.isEmpty()){
-          logger.info("## {} Market Data Update", iteration++);
-          for(StockPriceEvent event: events){
-            stockPriceEventBlockingQueue.put(event);
-          }
+        logger.info("## {} Market Data Update", iteration++);
+        for(StockPriceEvent event: events){
+          logger.info("{} change to {}", event.getSymbol(), String.format("%,.2f", event.getNewPrice()));
+          stockPriceEventBlockingQueue.put(event);
         }
+
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt(); // Respect interruption
         break;
@@ -62,29 +62,32 @@ public class StockPriceChangeEventProducer implements Runnable{
   private List<StockPriceEvent> randomCreateStockPriceChangeEvents(StockPriceCache stockPriceCache){
     List<StockPriceEvent> events = new ArrayList<>();
     Random random = new Random();
-    for(Map.Entry<String, BigDecimal> entry: stockPriceCache.getStockPriceEntrySets()){
-      // Random Simulate price change of a stock
-      if(random.nextBoolean()){
-        String symbol = entry.getKey();
-        BigDecimal price = entry.getValue();
-        Stock stock = stockPriceCache.getStockDictionary().get(symbol);
-        events.add(
-          StockPriceEvent.builder()
-            .symbol(symbol)
-            .newPrice(
-              BigDecimal.valueOf(
-                // Generate new Price
-                new GeometricBrownianMotion(stock.getMu(),stock.getSigma()).getNextPrice(price.doubleValue(), 60)
-              )
-            )
-            .build());
-      }
-    }
 
+    do {
+      for(Map.Entry<String, BigDecimal> entry: stockPriceCache.getStockPriceEntrySets()){
+        // Random Simulate price change of a stock
+        if(random.nextBoolean()){
+          String symbol = entry.getKey();
+          BigDecimal price = entry.getValue();
+          Stock stock = stockPriceCache.getStockDictionary().get(symbol);
+          events.add(
+            StockPriceEvent.builder()
+              .symbol(symbol)
+              .newPrice(
+                      BigDecimal.valueOf(
+                              // Generate new Price
+                              new GeometricBrownianMotion(stock.getMu(),stock.getSigma()).getNextPrice(price.doubleValue(), 60)
+                      )
+              )
+            .build());
+        }
+      }
+    } while(events.isEmpty());
+
+    // Sort event with Symbol name
+    events.sort(Comparator.comparing(StockPriceEvent::getSymbol));
     // Final Event flag is use for signal Console to display new Portfolio
-    if(!events.isEmpty()){
-      events.get(events.size()-1).setFinalEvent(true);
-    }
+    events.get(events.size()-1).setFinalEvent(true);
 
     return events;
   }

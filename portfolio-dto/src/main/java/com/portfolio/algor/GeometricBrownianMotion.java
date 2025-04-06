@@ -1,4 +1,4 @@
-package com.portfolio.app.util.algor;
+package com.portfolio.algor;
 
 import java.math.BigDecimal;
 import java.util.Random;

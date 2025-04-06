@@ -1,4 +1,4 @@
-package com.portfolio.dto.asset;
+package com.portfolio.dto;
 
 import java.math.BigDecimal;
 
@@ -7,5 +7,5 @@ public interface IAssetInterface {
   int getSize();
 
   // Inversion of Control to Calculate Price defined by Concrete Class
-  BigDecimal calculatePrice(BigDecimal price);
+  BigDecimal calculatePrice(BigDecimal priceOrUnderlyingPrice);
 }

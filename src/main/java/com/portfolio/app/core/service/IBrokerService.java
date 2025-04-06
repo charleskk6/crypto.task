@@ -1,8 +1,8 @@
-package com.portfolio.app.core.processor;
+package com.portfolio.app.core.service;
 
 import com.portfolio.data.UserProfile;
 
-public interface IBrokerProcessor {
+public interface IBrokerService {
   // Register Market Data Subscriber
   void registerUserProfile(UserProfile userProfile);
 }

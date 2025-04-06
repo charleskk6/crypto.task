@@ -1,4 +1,4 @@
-package com.portfolio.dto.asset;
+package com.portfolio.dto;
 
 import java.math.BigDecimal;
 import java.util.Optional;

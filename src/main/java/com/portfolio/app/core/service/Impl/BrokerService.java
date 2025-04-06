@@ -1,10 +1,13 @@
-package com.portfolio.app.core.processor.Impl;
+package com.portfolio.app.core.service.Impl;
 
+import com.portfolio.app.core.console.PortfolioConsole;
 import com.portfolio.app.core.consumer.StockPriceUpdateConsumer;
-import com.portfolio.app.core.processor.IBrokerProcessor;
+import com.portfolio.app.core.service.IBrokerService;
 import com.portfolio.data.StockPriceCache;
 import com.portfolio.data.UserProfile;
 import com.portfolio.dto.event.StockPriceEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,24 +20,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
-public class BrokerProcessor implements IBrokerProcessor {
+public class BrokerService implements IBrokerService {
 
   private final BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue;
   private final StockPriceCache stockPriceCache;
+  private final PortfolioConsole portfolioConsole;
   private final Object displayBlockingLock;
 
   private final List<UserProfile> subscribers;
   private final List<StockPriceUpdateConsumer> stockPriceUpdateConsumers;
   private static final int NUM_CONSUMERS = 4;
 
+  private static final Logger logger = LoggerFactory.getLogger(BrokerService.class);
+
   @Autowired
-  public BrokerProcessor(
+  public BrokerService(
     BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue,
     StockPriceCache stockPriceCache,
+    PortfolioConsole portfolioConsole,
     Object displayBlockingLock
   ){
     this.stockPriceEventBlockingQueue = stockPriceEventBlockingQueue;
     this.stockPriceCache = stockPriceCache;
+    this.portfolioConsole = portfolioConsole;
     this.displayBlockingLock = displayBlockingLock;
     this.subscribers = new ArrayList<>();
     this.stockPriceUpdateConsumers = new ArrayList<>();
@@ -42,7 +50,9 @@ public class BrokerProcessor implements IBrokerProcessor {
 
   @Override
   public void registerUserProfile(UserProfile userProfile){
+    logger.debug("Register New UserProfile: {}", userProfile.getPortfolio().getName());
     subscribers.add(userProfile);
+    portfolioConsole.registerPortfolio(userProfile.getPortfolio());
   }
 
   @PostConstruct

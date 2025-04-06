@@ -2,8 +2,8 @@ package com.portfolio.app.core.console;
 
 import com.portfolio.app.util.LogTableUtil;
 import com.portfolio.data.Portfolio;
-import com.portfolio.dto.asset.AssetWrapper;
-import com.portfolio.dto.asset.IAssetInterface;
+import com.portfolio.dto.AssetWrapper;
+import com.portfolio.dto.IAssetInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,7 @@ public class PortfolioConsole{
   private final String[] headers = {"symbol", "price", "qty", "value"};
   // Define fixed column widths
   private final int[] columnWidths = {25, 15, 20, 20};
+  private final int totalColumnWidth = totalColumnWidth();
 
   private static final Logger logger = LoggerFactory.getLogger(PortfolioConsole.class);
 
@@ -42,6 +43,7 @@ public class PortfolioConsole{
   }
 
   public void registerPortfolio(Portfolio portfolio){
+    logger.debug("Register New Portfolio: {}", portfolio.getName());
     portfolios.add(portfolio);
   }
 
@@ -53,6 +55,7 @@ public class PortfolioConsole{
   public void display(){
     running = true;
     logger.debug("Portfolio Console starts");
+
     while (running) {
       try {
         synchronized (displayBlockingLock) {
@@ -62,13 +65,12 @@ public class PortfolioConsole{
             logger.info("\n## {}", portfolio.getName());
             LogTableUtil.logTable(headers, generateTableContent(portfolio), columnWidths);
 
-            int totalWidth = totalColumnWidth() - 8;
-            logger.info(String.format("#Total portfolio %," + totalWidth + ".2f\n",
-                    portfolio.getTotalValue().setScale(2, RoundingMode.HALF_UP).doubleValue()));
+            double total = portfolio.getTotalValue().setScale(2, RoundingMode.HALF_UP).doubleValue();
+            logger.info("#Total portfolio " + String.format("%," + totalColumnWidth + ".2f\n", total));
           }
         }
       } catch (InterruptedException e) {
-        Thread.currentThread().interrupt(); // Respect interruption
+        Thread.currentThread().interrupt();
         break;
       }
     }
@@ -99,6 +101,6 @@ public class PortfolioConsole{
     for(int width: columnWidths){
       total += width;
     }
-    return total;
+    return total - 8; // offset
   }
 }

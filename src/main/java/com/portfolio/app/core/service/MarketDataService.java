@@ -1,4 +1,4 @@
-package com.portfolio.app.core.processor;
+package com.portfolio.app.core.service;
 
 import com.portfolio.app.config.StocksConfig;
 import com.portfolio.app.core.producer.StockPriceChangeEventProducer;
@@ -13,12 +13,12 @@ import javax.annotation.PreDestroy;
 import java.util.concurrent.BlockingQueue;
 
 @Component
-public class MarketDataProcessor extends Thread{
+public class MarketDataService extends Thread{
 
   private final StockPriceChangeEventProducer stockPriceChangeEventProducer;
 
   @Autowired
-  public MarketDataProcessor(
+  public MarketDataService(
     BlockingQueue<StockPriceEvent> stockPriceEventBlockingQueue,
     StocksConfig stockConfig,
     StockPriceCache stockPriceCache,
