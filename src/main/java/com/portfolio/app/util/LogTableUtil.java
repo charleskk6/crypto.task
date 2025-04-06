@@ -17,13 +17,19 @@ public class LogTableUtil {
       sb.append(formatRow(row, widths));
     }
 
-    logger.info("\n" + sb.toString());
+    logger.info("\n" + sb);
   }
 
   private static String formatRow(String[] row, int[] widths) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < row.length; i++) {
-      sb.append(String.format("%-" + widths[i] + "s", row[i]));
+      String value;
+      try{
+        value = String.format("%," + widths[i] + ".2f", Double.parseDouble(row[i]));
+      } catch (NumberFormatException ex){
+        value = String.format("%-" + widths[i] + "s", row[i]);
+      }
+      sb.append(value);
       sb.append(" | ");
     }
     sb.setLength(sb.length() - 3); // Remove trailing " | "

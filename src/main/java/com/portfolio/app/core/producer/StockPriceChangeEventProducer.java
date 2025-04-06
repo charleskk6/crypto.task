@@ -47,7 +47,6 @@ public class StockPriceChangeEventProducer implements Runnable{
         List<StockPriceEvent> events = randomCreateStockPriceChangeEvents(stockPriceCache);
         if(!events.isEmpty()){
           logger.info("## {} Market Data Update", iteration++);
-
           for(StockPriceEvent event: events){
             stockPriceEventBlockingQueue.put(event);
           }
@@ -64,9 +63,8 @@ public class StockPriceChangeEventProducer implements Runnable{
     List<StockPriceEvent> events = new ArrayList<>();
     Random random = new Random();
     for(Map.Entry<String, BigDecimal> entry: stockPriceCache.getStockPriceEntrySets()){
-      // Initial Price for a stock, Or
       // Random Simulate price change of a stock
-      if(Objects.isNull(entry.getValue()) || random.nextBoolean()){
+      if(random.nextBoolean()){
         String symbol = entry.getKey();
         BigDecimal price = entry.getValue();
         Stock stock = stockPriceCache.getStockDictionary().get(symbol);

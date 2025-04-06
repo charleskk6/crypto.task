@@ -39,7 +39,6 @@ public class StockPriceCache {
   // Extract only Stock defined in position.csv, mapping with initial price setting in properties file
   private void setupCache(){
     try (InputStream inputStream = StockPriceCache.class.getResourceAsStream(POSITION_FILE_PATH)) {
-
       // Ensure the file exists
       if (inputStream == null) {
         logger.error("File not found in resources.");

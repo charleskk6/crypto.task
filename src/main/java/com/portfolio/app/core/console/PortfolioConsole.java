@@ -27,7 +27,7 @@ public class PortfolioConsole{
 
   private static final Logger logger = LoggerFactory.getLogger(PortfolioConsole.class);
 
-  private List<Portfolio> portfolios = new ArrayList<>();
+  private final List<Portfolio> portfolios = new ArrayList<>();
 
   @Autowired
   public PortfolioConsole(Object displayBlockingLock){
@@ -55,18 +55,17 @@ public class PortfolioConsole{
     logger.debug("Portfolio Console starts");
     while (running) {
       try {
-        synchronized (displayBlockingLock){
+        synchronized (displayBlockingLock) {
           // Wait until stock price change update complete
           displayBlockingLock.wait();
-        }
+          for (Portfolio portfolio : portfolios) {
+            logger.info("\n## {}", portfolio.getName());
+            LogTableUtil.logTable(headers, generateTableContent(portfolio), columnWidths);
 
-        for(Portfolio portfolio: portfolios){
-          logger.info("\n## {}", portfolio.getName());
-          LogTableUtil.logTable(headers, generateTableContent(portfolio), columnWidths);
-
-          int totalWidth = totalColumnWidth() - 15;
-          logger.info(String.format("#Total portfolio %," + totalWidth + ".2f\n",
-                  portfolio.getTotalValue().setScale(2, RoundingMode.HALF_UP).doubleValue()));
+            int totalWidth = totalColumnWidth() - 8;
+            logger.info(String.format("#Total portfolio %," + totalWidth + ".2f\n",
+                    portfolio.getTotalValue().setScale(2, RoundingMode.HALF_UP).doubleValue()));
+          }
         }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt(); // Respect interruption

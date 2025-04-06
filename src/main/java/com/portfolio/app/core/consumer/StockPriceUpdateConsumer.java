@@ -42,12 +42,12 @@ public class StockPriceUpdateConsumer implements Runnable{
       while (running) {
         StockPriceEvent event = stockPriceEventBlockingQueue.take();
         stockPriceCache.upsertStockPrice(event.getSymbol(), event.getNewPrice());
-        subscribers.forEach(subscriber -> {
-          subscriber.updatePortfolio(event.getSymbol(), event.getNewPrice());
-        });
 
-        if(event.isFinalEvent()){
-          synchronized (displayBlockingLock) {
+        synchronized (displayBlockingLock) {
+          subscribers.forEach(subscriber -> {
+            subscriber.updatePortfolio(event.getSymbol(), event.getNewPrice());
+          });
+          if(event.isFinalEvent()){
             displayBlockingLock.notifyAll();
           }
         }

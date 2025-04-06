@@ -2,6 +2,7 @@ package com.portfolio.data;
 
 import com.portfolio.dto.asset.AssetWrapper;
 import com.portfolio.dto.asset.IAssetInterface;
+import com.portfolio.dto.dict.Stock;
 import com.portfolio.factory.AssetWrapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,22 +17,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Portfolio {
 
+  private final StockPriceCache stockPriceCache;
   private final String name;
 
   private final ConcurrentHashMap<String, AssetWrapper<? extends IAssetInterface>> portfolioCache;
 
-  private static final String POSITION_FILE_PATH = "/position.csv";
+  private final String positionFilePath;
 
   private static final Logger logger = LoggerFactory.getLogger(Portfolio.class);
 
-  public Portfolio(final String name){
+  public Portfolio(final String name, final String positionFilePath,
+                   // Initial with current asset price
+                   final StockPriceCache stockPriceCache){
+    this.stockPriceCache = stockPriceCache;
     this.name = name;
+    this.positionFilePath = positionFilePath;
     this.portfolioCache = new ConcurrentHashMap<>();
     setupCache();
   }
 
   private void setupCache(){
-    try (InputStream inputStream = Portfolio.class.getResourceAsStream(POSITION_FILE_PATH)) {
+    try (InputStream inputStream = Portfolio.class.getResourceAsStream(positionFilePath)) {
 
       // Ensure the file exists
       if (inputStream == null) {
@@ -49,8 +55,10 @@ public class Portfolio {
 
           final String symbol = values[0];
           final String positionSize = values[1];
-
-          portfolioCache.put(symbol, AssetWrapperFactory.create(symbol, Integer.parseInt(positionSize), BigDecimal.ONE));
+          final String symbolOrUnderlyingSymbol = symbol.split("-")[0];
+          final Stock underlying = stockPriceCache.getStockDictionary().get(symbolOrUnderlyingSymbol);
+          portfolioCache.put(symbol, AssetWrapperFactory.create(
+                  symbol, Integer.parseInt(positionSize), BigDecimal.valueOf(underlying.getInitialPrice())));
         }
       }
     } catch (IOException e) {

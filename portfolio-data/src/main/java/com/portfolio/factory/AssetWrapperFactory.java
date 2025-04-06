@@ -36,7 +36,7 @@ public class AssetWrapperFactory {
       YearMonth yearMonth = YearMonth.of(year, MonthUtil.MONTH_MAP.get(notations[1]));
       LocalDate expirationDate = yearMonth.atEndOfMonth();
 
-      return new AssetWrapper<>(StockOptionItem.builder()
+      AssetWrapper<StockOptionItem> asset = new AssetWrapper<>(StockOptionItem.builder()
               .symbol(symbol)
               .underlyingSymbol(underlyingSymbol)
               .type(optionType)
@@ -44,11 +44,15 @@ public class AssetWrapperFactory {
               .expirationDate(expirationDate)
               .size(positionSize)
               .build());
+      asset.setPriceOrUnderlyingPrice(priceOrUnderlyingPrice);
+      return asset;
     } else {
-       return new AssetWrapper<>(StockItem.builder()
+      AssetWrapper<StockItem> asset = new AssetWrapper<>(StockItem.builder()
               .symbol(symbol)
               .size(positionSize)
               .build());
+      asset.setPriceOrUnderlyingPrice(priceOrUnderlyingPrice);
+       return asset;
     }
   }
 }
