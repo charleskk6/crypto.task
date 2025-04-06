@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.7.6'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'application'
 }
 
 java {
@@ -12,6 +13,9 @@ java {
 repositories {
 	mavenCentral()
 }
+
+// Define the main class to run
+mainClassName = 'com.portfolio.app.PortfolioSimulationApplication'
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
@@ -28,4 +32,9 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Configure JVM arguments for the run task
+run {
+	jvmArgs = ['-Xms512m', '-Xmx1024m']
 }
