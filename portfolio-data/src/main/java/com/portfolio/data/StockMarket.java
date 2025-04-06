@@ -37,9 +37,10 @@ public class StockMarket {
    * Instantiates a new StockMarket with Stock Dictionary configured in properties file
    *
    * @param stockDictionary the stock dictionary
+   * @param stockPriceCache stockPriceCache for test case injection
    */
-  public StockMarket(Map<String, Stock> stockDictionary){
-    this.stockPriceCache = new ConcurrentHashMap<>();
+  public StockMarket(Map<String, Stock> stockDictionary, ConcurrentHashMap<String, BigDecimal> stockPriceCache){
+    this.stockPriceCache = Optional.ofNullable(stockPriceCache).orElse(new ConcurrentHashMap<>());
     this.stockDictionary = stockDictionary;
     setupCache();
   }

@@ -21,3 +21,7 @@ dependencies {
     //Sub-Module
     implementation project(':portfolio-dto')
 }
+
+test {
+    useJUnitPlatform()
+}

@@ -7,6 +7,7 @@ import com.portfolio.factory.AssetWrapperFactory;
 import com.portfolio.util.MonthUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,8 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * Portfolio is a DataType created by csv file.
- * It contains the  from StockPriceCache
+ * Portfolio is a DataType created by paring a csv file.
  */
 public class Portfolio {
 
@@ -37,11 +37,15 @@ public class Portfolio {
    *
    * @param name             the portfolio name
    * @param positionFilePath the position file path
+   * @param portfolioCache   Nullable portfolioCache
    */
-  public Portfolio(final String name, final String positionFilePath){
+  public Portfolio(
+    final String name, final String positionFilePath,
+    @Nullable final ConcurrentHashMap<String, AssetWrapper<? extends IAssetInterface>> portfolioCache
+  ){
     this.name = name;
     this.positionFilePath = positionFilePath;
-    this.portfolioCache = new ConcurrentHashMap<>();
+    this.portfolioCache = Optional.ofNullable(portfolioCache).orElse(new ConcurrentHashMap<>());
   }
 
   /**
@@ -70,8 +74,10 @@ public class Portfolio {
           final String positionSize = values[1];
           final String symbolOrUnderlyingSymbol = symbol.split("-")[0];
           final Stock underlying = stockMarket.getStockDictionary().get(symbolOrUnderlyingSymbol);
-          portfolioCache.put(symbol, AssetWrapperFactory.create(
-                  symbol, Integer.parseInt(positionSize), BigDecimal.valueOf(underlying.getInitialPrice())));
+          if(Objects.nonNull(underlying)){
+            portfolioCache.put(symbol, AssetWrapperFactory.create(
+                    symbol, Integer.parseInt(positionSize), BigDecimal.valueOf(underlying.getInitialPrice())));
+          }
         }
       }
     } catch (IOException e) {

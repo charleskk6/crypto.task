@@ -14,6 +14,6 @@ public class StockMarketConfig {
    */
   @Bean
   public StockMarket setupStockMarket(StocksConfig stocksConfig){
-    return new StockMarket(stocksConfig.getData());
+    return new StockMarket(stocksConfig.getData(), null);
   }
 }
