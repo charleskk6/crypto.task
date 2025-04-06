@@ -9,7 +9,12 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-public class StockPriceUpdateConsumer implements Runnable{
+/**
+ * The type Stock price update consumer runnable.
+ * Is a consumer abstraction to poll a Stock Price Change Event, process update to Stock Market and broadcast to subscribers
+ * This consumer runnable can be run in parallel by threads
+ */
+public class StockPriceUpdateConsumerRunnable implements Runnable{
 
   private final BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue;
   private final StockMarket stockMarket;
@@ -18,9 +23,18 @@ public class StockPriceUpdateConsumer implements Runnable{
   private final String consumerName;
   private final Object displayBlockingLock;
 
-  private static final Logger logger = LoggerFactory.getLogger(StockPriceUpdateConsumer.class);
+  private static final Logger logger = LoggerFactory.getLogger(StockPriceUpdateConsumerRunnable.class);
 
-  public StockPriceUpdateConsumer(
+  /**
+   * Instantiates a new Stock price update consumer runnable.
+   *
+   * @param stockChangePriceEventBlockingQueue the stock change price event blocking queue
+   * @param stockMarket                        the stock market
+   * @param subscribers                        the subscribers
+   * @param consumerName                       the consumer name
+   * @param displayBlockingLock                the display blocking lock
+   */
+  public StockPriceUpdateConsumerRunnable(
     BlockingQueue<StockChangePriceEvent> stockChangePriceEventBlockingQueue,
     StockMarket stockMarket,
     List<Portfolio> subscribers,
@@ -40,12 +54,15 @@ public class StockPriceUpdateConsumer implements Runnable{
       logger.debug("Stock Price Update Consumer:{} starts", consumerName);
       running = true;
       while (running) {
+        // Consume Stock Change Event and Update Stock Market
         StockChangePriceEvent event = stockChangePriceEventBlockingQueue.take();
         stockMarket.upsertStockPrice(event.getSymbol(), event.getNewPrice());
 
+        // Broadcast to subscribers to update their portfolio
         synchronized (displayBlockingLock) {
           subscribers.forEach(subscriber -> subscriber
                   .updateBySymbolOrUnderlyingSymbolPrice(event.getSymbol(), event.getNewPrice()));
+          // notify PortfolioConsole to wake up and print updated portfolios
           if(event.isFinalEvent()){
             displayBlockingLock.notifyAll();
           }
@@ -57,6 +74,9 @@ public class StockPriceUpdateConsumer implements Runnable{
     logger.debug("Stock Price Update Consumer:{} has stopped", consumerName);
   }
 
+  /**
+   * Stop.
+   */
   public void stop(){
     running = false;
   }

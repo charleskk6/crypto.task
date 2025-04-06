@@ -3,10 +3,20 @@ package com.portfolio.app.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The type Log table util. Helps print Portfolio Console
+ */
 public class LogTableUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(LogTableUtil.class);
 
+  /**
+   * Log table.
+   *
+   * @param headers the headers
+   * @param rows    the rows
+   * @param widths  the widths
+   */
   public static void logTable(String[] headers, String[][] rows, int[] widths) {
     StringBuilder sb = new StringBuilder();
 
