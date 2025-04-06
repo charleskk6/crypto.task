@@ -1,14 +1,13 @@
 package com.portfolio.algor;
 
-import java.math.BigDecimal;
 import java.util.Random;
 
 public class GeometricBrownianMotion {
   // Drift coefficient
-  private double mu;
+  private final double mu;
   // Volatility coefficient
-  private double sigma;
-  private Random random;
+  private final double sigma;
+  private final Random random;
 
   // Number of seconds in a trading year: 252 days * 8.5 hours/day * 3600 seconds/hour
   private static final double SECONDS_IN_TRADING_YEAR = 252 * 8.5 * 3600;

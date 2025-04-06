@@ -17,7 +17,7 @@ public class LogTableUtil {
       sb.append(formatRow(row, widths));
     }
 
-    logger.info("\n" + sb);
+    logger.info("\n{}", sb);
   }
 
   private static String formatRow(String[] row, int[] widths) {
@@ -40,17 +40,17 @@ public class LogTableUtil {
   private static String formatSeparator(int[] widths) {
     StringBuilder sb = new StringBuilder();
     for (int width : widths) {
-      sb.append(repeat("-", width)).append("-+-");
+      sb.append(repeat(width)).append("-+-");
     }
     sb.setLength(sb.length() - 3); // Remove trailing "-+-"
     sb.append("\n");
     return sb.toString();
   }
 
-  private static String repeat(String str, int times) {
+  private static String repeat(int times) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < times; i++) {
-      sb.append(str);
+      sb.append("-");
     }
     return sb.toString();
   }

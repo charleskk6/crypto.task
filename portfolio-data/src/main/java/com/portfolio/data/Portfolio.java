@@ -127,9 +127,7 @@ public class Portfolio {
     portfolioCache.entrySet()
       .parallelStream()
       .filter(entry -> entry.getKey().startsWith(symbolOrUnderlyingSymbol))
-      .forEach(entry -> {
-        entry.getValue().setPriceOrUnderlyingPrice(priceOrUnderlyingPrice);
-      });
+      .forEach(entry -> entry.getValue().setPriceOrUnderlyingPrice(priceOrUnderlyingPrice));
     logger.debug("Update Price Completed");
   }
 

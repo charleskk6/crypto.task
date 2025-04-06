@@ -44,9 +44,7 @@ public class StockPriceUpdateConsumer implements Runnable{
         stockPriceCache.upsertStockPrice(event.getSymbol(), event.getNewPrice());
 
         synchronized (displayBlockingLock) {
-          subscribers.forEach(subscriber -> {
-            subscriber.updatePortfolio(event.getSymbol(), event.getNewPrice());
-          });
+          subscribers.forEach(subscriber -> subscriber.updatePortfolio(event.getSymbol(), event.getNewPrice()));
           if(event.isFinalEvent()){
             displayBlockingLock.notifyAll();
           }

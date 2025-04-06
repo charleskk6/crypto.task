@@ -1,7 +1,6 @@
 package com.portfolio.app.config;
 
-import com.portfolio.app.core.console.PortfolioConsole;
-import com.portfolio.app.core.service.Impl.BrokerService;
+import com.portfolio.app.core.service.impl.BrokerService;
 import com.portfolio.data.Portfolio;
 import com.portfolio.data.StockPriceCache;
 import com.portfolio.data.UserProfile;

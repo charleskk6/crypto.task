@@ -66,7 +66,7 @@ public class PortfolioConsole{
             LogTableUtil.logTable(headers, generateTableContent(portfolio), columnWidths);
 
             double total = portfolio.getTotalValue().setScale(2, RoundingMode.HALF_UP).doubleValue();
-            logger.info("#Total portfolio " + String.format("%," + totalColumnWidth + ".2f\n", total));
+            logger.info("#Total portfolio {}", String.format("%," + totalColumnWidth + ".2f\n", total));
           }
         }
       } catch (InterruptedException e) {

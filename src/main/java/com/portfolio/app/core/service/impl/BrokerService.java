@@ -1,4 +1,4 @@
-package com.portfolio.app.core.service.Impl;
+package com.portfolio.app.core.service.impl;
 
 import com.portfolio.app.core.console.PortfolioConsole;
 import com.portfolio.app.core.consumer.StockPriceUpdateConsumer;
