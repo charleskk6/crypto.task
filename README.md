@@ -1,5 +1,4 @@
-# Crypto.com 
-## Portfolio Assignment [by Charles SO]
+## Portfolio [by Charles SO]
 
 ### Description
 A Spring boot application that simulate a Positioning system to show the real-time value of trader's portfolio which consist of three types of products:
